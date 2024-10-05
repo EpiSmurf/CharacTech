@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra
 LDFLAGS =
 LDLIBS =
 
-EXE = solver
+EXE = solver xor
 
 all: $(EXE)
 
