@@ -63,7 +63,7 @@ void print_two_dim(int row, int col, char arr[row][col])
 
 
 
-void search(int col, int row,char grid[row][col], char word)
+void search(int col, int row,char grid[row][col], char* word)
 {
        // this fonction search on the grid the word of find
 
@@ -71,6 +71,12 @@ void search(int col, int row,char grid[row][col], char word)
        int x1 = 0;
        int y0 = 0; 
        int y1 = 0; 
+
+       to_uppercase(word);
+       int len = my_strlen(word); //length of the world to be search
+       
+
+
 
 }
 
@@ -88,10 +94,7 @@ int main(int argc, char *argv[])
 	     err(EXIT_FAILURE,"you don't take two argument");
      }
 
-     to_uppercase(argv[0]);
      
-     int len = my_strlen(argv[2]); //length of the world to be search
-
      FILE *fp;
 
      fp = fopen(argv[1], "r");
@@ -152,6 +155,8 @@ int main(int argc, char *argv[])
 
 
      print_two_dim(row,col,grid);
+     
+     search( col, row, grid, argv[2]);
 
      printf("Not found\n");
      return 0;
