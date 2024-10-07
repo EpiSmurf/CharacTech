@@ -6,7 +6,7 @@
 
 void to_uppercase(char *str)
 {
-	// this function takes a world changes it to a capital letter
+	// this function takes a world change it to a capital letter
         int i = 0;
 
         while( str[i] != '\0')
@@ -61,25 +61,17 @@ void print_two_dim(int row, int col, char arr[row][col])
    } 
 }
 
-void print_one_dim(char arr[], int size)
+
+
+void search(int col, int row,char grid[row][col], char word)
 {
+       // this fonction search on the grid the word of find
 
-   if(size == 0)
-   {
-      printf("[]\n");
-   }
+       int x0 = 0;
+       int x1 = 0;
+       int y0 = 0; 
+       int y1 = 0; 
 
-   else
-   {
-      printf("[");
-
-      for(int i = 0; i < size - 1; i++)
-      {
-          printf("%c, ",arr[i]);
-      }
-   
-      printf("%d]\n", arr[size-1]);  
-   } 
 }
 
 
@@ -103,22 +95,45 @@ int main(int argc, char *argv[])
      FILE *fp;
 
      fp = fopen(argv[1], "r");
-     
+
      if(fp == NULL)
      {
 	     printf("Error: not such file");
 	     return 1;
      }
         
-    
-    char grid[9][10];
+    int row = 0;
+    int col = 0;
+    char charac;
+
+    while ((charac = fgetc(fp)) != EOF)
+    {
+        // this loop tranforms the file on a grid of char
+
+        if (charac == '\n')
+        {
+                row++;
+        }
+
+        else if (charac >= 'A' && charac<='Z' && row==0)
+        {
+                col++;
+        }
+    }
+     
+     rewind(fp);  // Remettre le curseur au début du fichier
+
+     printf("%i,%i\n",row,col); 
+     char grid[row][col];
     
     
     int i = 0;
     int j = 0;
-    char charac;
+
     while ((charac = fgetc(fp)) != EOF)
     {
+	// this loop tranforms the file on a grid of char
+
 	if (charac == '\n')
         {
                 j = 0;
@@ -136,8 +151,7 @@ int main(int argc, char *argv[])
 
 
 
-     print_two_dim(9,10,grid);
-     printf("%i,%i\n",i,j);
+     print_two_dim(row,col,grid);
 
      printf("Not found\n");
      return 0;
