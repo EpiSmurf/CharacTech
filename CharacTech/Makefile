@@ -1,14 +1,20 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 `sdl2-config --cflags`
+CFLAGS = -Wall -Wextra -std=c99 `sdl2-config --cflags` -I/usr/include/SDL2
 LDFLAGS = `sdl2-config --libs` -lSDL2_image
 
-all: main
+SRC = crop_grid.c
+OBJ = $(SRC:.c=.o)
+TARGET = crop_grid
 
-main: main.o
-	$(CC) -o main main.o $(LDFLAGS)
+all: $(TARGET)
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $(TARGET) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f main main.o
+	rm -f $(OBJ) $(TARGET)
+
+.PHONY: all clean
