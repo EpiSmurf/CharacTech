@@ -67,17 +67,81 @@ void search(int col, int row,char grid[row][col], char* word)
 {
        // this fonction search on the grid the word of find
 
-       int x0 = 0;
-       int x1 = 0;
-       int y0 = 0; 
-       int y1 = 0; 
+       //int x0 = 0;
+       //int x1 = 0;
+       //int y0 = 0; 
+       //int y1 = 0; 
 
        to_uppercase(word);
-       int len = my_strlen(word); //length of the world to be search
-       
+       int len = my_strlen(word) -1; //length of the world to be search
+       for(int i = 0; i< row; i++)
+       {
+	      for(int j = 0; j<col; j++)
+	      {
+		      if(word[0] == grid[i][j])
+		      {
+			      if(i+len <= col && word[len] == grid[i+len][j])
+			      {
+				 //cas vertical
+                                 int r = i +1;
+			
+                                 int w = 1;
+				 while( w<len-1 && word[w] == grid[r][j])
+			         {
+					 r++;
+					 w++;
+				 }
+
+				 if(word[w] == grid[r][j])
+			         {
+					 printf("(%i,%i),(%i,%i)\n",i,j,j,i+len);
+					 break;
+			         }
+		              }
+			
+			      if(j+len <= row && word[len] == grid[i][j+len])
+			      {
+				 //cas horizontal
+                                   int c = j +1; 
+                                   int w = 1;   
+
+				 while( w<len-1 && word[w] == grid[i][c])
+                                 {
+                                         c++;
+                                         w++;
+                                 }
+
+                                 if(word[w] == grid[i][c])
+                                 {
+                                         printf("(%i,%i),(%i,%i)\n",i,j,j+len,i);
+                                         break;
+                                 }
+			      }
+
+			      if(j+len <= row && word[len] == grid[i][j+len])
+                              {
+                                 //cas diagonale a fair 
+                                   int c = j +1;
+                                   int w = 1;
+
+                                 while( w<len-1 && word[w] == grid[i][c])
+                                 {
+                                         c++;
+                                         w++;
+                                 }
+
+                                 if(word[w] == grid[i][c])
+                                 {
+                                         printf("(%i,%i),(%i,%i)\n",i,j,j+len,i);
+                                         break;
+                                 }
+                              }
+		      }
+	      }
+       }
 
 
-
+       printf("Not found\n");
 }
 
 
@@ -158,7 +222,6 @@ int main(int argc, char *argv[])
      
      search( col, row, grid, argv[2]);
 
-     printf("Not found\n");
      return 0;
 
      	
