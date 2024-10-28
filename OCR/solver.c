@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
-#include <unistd.h>
-#include <fcntl.h>
 
 void to_uppercase(char *str)
 {
@@ -24,6 +22,7 @@ void to_uppercase(char *str)
 
 int my_strlen(char str[])
 {
+       //this function return the length of word
        int i = 0;
 
        while(str[i] != '\0')
@@ -34,126 +33,212 @@ int my_strlen(char str[])
        return i;
 }
 
-void print_two_dim(int row, int col, char arr[row][col])
-{
-   if(row == 0 && col == 0)
-   {
-      printf("[]\n");
-   }
-
-   else
-   {
-      printf("[\n");
-
-      for(int i = 0; i < row; i++)
-      {  
-         printf(" [");
-
-         for(int j = 0; j < col - 1; j++)
-         {
-            printf("%i, ",arr[i][j]);
-         }
-         
-            printf("%i]\n", arr[i][col-1]);
-      }
-
-      printf("]\n" );
-   } 
-}
-
-
 
 void search(int col, int row,char grid[row][col], char* word)
 {
-       // this fonction search on the grid the word of find
-
-       //int x0 = 0;
-       //int x1 = 0;
-       //int y0 = 0; 
-       //int y1 = 0; 
+       // this fonction search on the grid thei position of word of find
+ 
+       int verif = 0; //check if the word was found
 
        to_uppercase(word);
        int len = my_strlen(word) -1; //length of the world to be search
        for(int i = 0; i< row; i++)
        {
-	      for(int j = 0; j<col; j++)
-	      {
-		      if(word[0] == grid[i][j])
-		      {
-			      if(i+len <= col && word[len] == grid[i+len][j])
-			      {
-				 //cas vertical
-                                 int r = i +1;
+	   for(int j = 0; j<col; j++)
+	   {
+	       if(word[0] == grid[i][j])
+	       {
+		  if(i+len <= col && word[len] == grid[i+len][j])
+		  {
+		     //vertical case
+                     int r = i +1;
+                     int w = 1;
+		     while(w<len-1 && word[w] == grid[r][j])
+		     {
+		           r++;
+			   w++;
+		     }
+
+		     if(word[w] == grid[r][j])
+                     {
+			 printf("(%i,%i),(%i,%i)\n",j,i,j,i+len);
+			 verif = 1;
+			 break;
+	             }
+	          }
 			
-                                 int w = 1;
-				 while( w<len-1 && word[w] == grid[r][j])
-			         {
-					 r++;
-					 w++;
-				 }
+		 else if(j+len <= row && word[len] == grid[i][j+len])
+		 {
+		    //horizontal case
+                    int c = j +1; 
+                    int w = 1;   
+                    while(w<len-1 && word[w] == grid[i][c])
+		    {  
+		           c++;
+                           w++;
+                    }
 
-				 if(word[w] == grid[r][j])
-			         {
-					 printf("(%i,%i),(%i,%i)\n",i,j,j,i+len);
-					 break;
-			         }
-		              }
-			
-			      if(j+len <= row && word[len] == grid[i][j+len])
-			      {
-				 //cas horizontal
-                                   int c = j +1; 
-                                   int w = 1;   
+                    if(word[w] == grid[i][c])
+                    {
+                       printf("(%i,%i),(%i,%i)\n",j,i,j+len,i);
+		       verif = 1;
+                       break;
+                    }
+		}
 
-				 while( w<len-1 && word[w] == grid[i][c])
-                                 {
-                                         c++;
-                                         w++;
-                                 }
 
-                                 if(word[w] == grid[i][c])
-                                 {
-                                         printf("(%i,%i),(%i,%i)\n",i,j,j+len,i);
-                                         break;
-                                 }
-			      }
+		else if(i-len >= 0 && word[len] == grid[i-len][j])
+                {
+                   //inverse vertical case
+                   int r = i - 1;
+                   int w = 1;
+                   while(w<len-1 && word[w] == grid[r][j])
+                   {
+                          r--;
+                          w++;
+                   }
+       
+		   if(word[w] == grid[r][j])
+                   {
+                      printf("(%i,%i),(%i,%i)\n",j,i,j,i-len);
+                      verif = 1;
+                      break;
+                   }
+                }
 
-			      if(j+len <= row && word[len] == grid[i][j+len])
-                              {
-                                 //cas diagonale a fair 
-                                   int c = j +1;
-                                   int w = 1;
+		else if(j-len >= 0 && word[len] == grid[i][j-len])
+                {
+                   //inverse horizontal case
+                   int c = j -1;
+                   int w = 1;
+                   while(w<len-1 && word[w] == grid[i][c])
+                   {
+                          c--;
+                          w++;
+                   }
 
-                                 while( w<len-1 && word[w] == grid[i][c])
-                                 {
-                                         c++;
-                                         w++;
-                                 }
+                   if(word[w] == grid[i][c])
+                   {
+                      printf("(%i,%i),(%i,%i)\n",j,i,j-len,i);
+		      verif = 1;
+                      break;
+                   }
+                }
 
-                                 if(word[w] == grid[i][c])
-                                 {
-                                         printf("(%i,%i),(%i,%i)\n",i,j,j+len,i);
-                                         break;
-                                 }
-                              }
-		      }
+
+		else if(i+len <= row && j+len <= col 
+	        && word[len] == grid[i+len][j+len])
+                {
+                   //diagonal case
+                   int c = j + 1;
+              	   int r = i + 1;
+                   int w = 1;
+                   while(w<len-1 && word[w] == grid[r][c])
+                   {
+                         c++;
+		         r++;
+                         w++;
+                   }
+
+                   if(word[w] == grid[r][c])
+                   {
+                      printf("(%i,%i),(%i,%i)\n",j,i,j+len,i+len);
+		      verif = 1;
+                      break;
+                   }
+                 }
+
+		 else if(i+len <= row && j-len <= col 
+	         && word[len] == grid[i+len][j-len])
+                 {
+                    //diagonale 2 case 
+       	            int c = j - 1;
+                    int r = i + 1;
+                    int w = 1;
+                    while(w<len-1 && word[w] == grid[r][c])
+                    {
+                          c--;
+                          r++;
+                          w++;
+                    }
+
+                    if(word[w] == grid[r][c])
+                    {
+                       printf("(%i,%i),(%i,%i)\n",j,i,j-len,i+len);
+		       verif = 1;
+                       break;
+                    }
+                  }
+
+		else if(i-len <= row && j-len <= col 
+		&& word[len] == grid[i-len][j-len])
+                {
+                  //inverse diagonal case
+                  int c = j - 1;
+                  int r = i - 1;
+                  int w = 1;
+                  while(w<len-1 && word[w] == grid[r][c])
+		  {
+                         c--;
+                         r--;
+                         w++;
+                  }
+
+                  if(word[w] == grid[r][c])
+                  {
+                     printf("(%i,%i),(%i,%i)\n",j,i,j-len,i-len);
+		     verif = 1;
+                     break;
+                  }
+                }
+
+		else if(i-len <= row && j+len <= col 
+	        && word[len] == grid[i-len][j+len])
+                {
+                   //inverse diagonal 2 case
+                   int c = j + 1;
+                   int r = i - 1;
+                   int w = 1;
+                   while(w<len-1 && word[w] == grid[r][c])
+                   {
+                         c++;
+                         r--;
+                         w++;
+                   }
+
+                   if(word[w] == grid[r][c])
+		   {
+                      printf("(%i,%i),(%i,%i)\n",j,i,j+len,i-len);
+		      verif = 1;
+                      break;
+                   }
+                }
+
 	      }
+	  }
+
+          if(verif==1)
+          {
+	     break;
+          }
        }
 
-
-       printf("Not found\n");
+       if(verif!=1)
+       {
+         printf("Not found\n");
+       }
 }
 
 
 int main(int argc, char *argv[])
 {
-    /*This is the function solver:
-     * he has two parameter
-     * the first takes the file that contain the grid of word
-     * the second takes the word has found on the grid*/
+    /*This is solver function:
+     *argv[1] takes the file that contains the word grid
+     *argv[2] takes the word that should be found on the grid
+     and returns the position of the word in the grid we created*/
+     
 
-     argc = 2;
-     if(argv[argc] == NULL)
+     if(argc != 3)
      {
 	     err(EXIT_FAILURE,"you don't take two argument");
      }
@@ -188,15 +273,11 @@ int main(int argc, char *argv[])
         }
     }
      
-     rewind(fp);  // Remettre le curseur au début du fichier
+    rewind(fp);  // Move the cursor back to the beginning of the file
 
-     printf("%i,%i\n",row,col); 
-     char grid[row][col];
-    
-    
+    char grid[row][col];
     int i = 0;
     int j = 0;
-
     while ((charac = fgetc(fp)) != EOF)
     {
 	// this loop tranforms the file on a grid of char
@@ -214,15 +295,9 @@ int main(int argc, char *argv[])
         }
     }
 
-     fclose(fp);
+    fclose(fp);
 
-
-
-     print_two_dim(row,col,grid);
-     
-     search( col, row, grid, argv[2]);
+     search( col, row, grid, argv[2]); //search the word in the grid
 
      return 0;
-
-     	
 }
