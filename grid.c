@@ -59,7 +59,7 @@ void grayscale(SDL_Surface *surface)
             pix[i + (j * surface->w)] = p;
         }
     }
-    for(int i = 0; i<surface->w; i++)
+    /*for(int i = 0; i<surface->w; i++)
     {
         for(int j =0; j<surface->h;j++)
         {
@@ -72,7 +72,7 @@ void grayscale(SDL_Surface *surface)
             p = SDL_MapRGB(format,r,g,b);
             pix[i + (j * surface->w)] = p;
         }
-    }
+    }*/
     SDL_UnlockSurface(surface);
 }
 
