@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Guillaume/OneDrive - EPITA/S3-S4/CharacTech/CharacTech/Formatage",
-      "program": "c:/Users/Guillaume/OneDrive - EPITA/S3-S4/CharacTech/CharacTech/Formatage/build/Debug/outDebug",
+      "cwd": ".",
+      "program": "build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
