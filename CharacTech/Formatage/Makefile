@@ -23,5 +23,8 @@ $(TARGET_TURN): $(OBJ_TURN)
 clean:
 	rm -f $(OBJ_GRID) $(OBJ_TURN) $(TARGET_GRID) $(TARGET_TURN)
 	rm -f letter_*_*.png
+	rm -f *_turned.png
+	rm -f word_*.png
+	rm -f word_*_*.png
 
 .PHONY: all clean

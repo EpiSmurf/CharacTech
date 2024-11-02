@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
+#include <string.h>
 
 int main(int argc, char** argv)
 {
@@ -18,35 +19,16 @@ int main(int argc, char** argv)
     if (argc != 3)
         errx(EXIT_FAILURE, "Usage: %s <image_path> <angle>", argv[0]);
 
-    // Create SDL window
-    SDL_Window* window = SDL_CreateWindow("SDL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    if (!window)
-        errx(EXIT_FAILURE, "Window creation error: %s", SDL_GetError());
-
-    // Create SDL renderer
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer)
-        errx(EXIT_FAILURE, "Renderer creation error: %s", SDL_GetError());
-
     // Load image into a surface
     SDL_Surface* temp_surface = IMG_Load(argv[1]);
     if (!temp_surface)
         errx(EXIT_FAILURE, "Image loading error: %s", IMG_GetError());
 
     // Convert surface to target format
-    SDL_Surface* surface = SDL_ConvertSurfaceFormat(temp_surface, SDL_PIXELFORMAT_RGB888, 0);
+    SDL_Surface* surface = SDL_ConvertSurfaceFormat(temp_surface, SDL_PIXELFORMAT_RGBA8888, 0);
     SDL_FreeSurface(temp_surface);
     if (!surface)
         errx(EXIT_FAILURE, "Surface conversion error: %s", SDL_GetError());
-
-    // Set window size to match the image
-    SDL_SetWindowSize(window, surface->w, surface->h);
-
-    // Create a texture from the surface
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);  // Free surface after texture creation
-    if (!texture)
-        errx(EXIT_FAILURE, "Texture creation error: %s", SDL_GetError());
 
     // Parse rotation angle from arguments
     char* end;
@@ -54,40 +36,48 @@ int main(int argc, char** argv)
     if (*end != '\0')
         errx(EXIT_FAILURE, "Invalid angle: %s", argv[2]);
 
-    // Set rotation pivot to the center of the image
-    SDL_Point pivot = { surface->w / 2, surface->h / 2 };
-    SDL_Rect dest_rect = { 0, 0, surface->w, surface->h };
+    // Create a new surface to render the rotated image
+    SDL_Surface* rotated_surface = SDL_CreateRGBSurfaceWithFormat(0, surface->w, surface->h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (!rotated_surface)
+        errx(EXIT_FAILURE, "Rotated surface creation error: %s", SDL_GetError());
 
-    // Render the image with rotation
+    // Create an SDL renderer with the new surface as target
+    SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(rotated_surface);
+    if (!renderer)
+        errx(EXIT_FAILURE, "Renderer creation error: %s", SDL_GetError());
+
+    // Create a texture from the original surface
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);  // Free the original surface as we now have a texture
+    if (!texture)
+        errx(EXIT_FAILURE, "Texture creation error: %s", SDL_GetError());
+
+    // Set the rendering target to the rotated surface
+    SDL_SetRenderTarget(renderer, NULL);
+
+    // Set rotation pivot to the center of the image
+    SDL_Point pivot = { rotated_surface->w / 2, rotated_surface->h / 2 };
+    SDL_Rect dest_rect = { 0, 0, rotated_surface->w, rotated_surface->h };
+
+    // Clear and render the rotated image
     SDL_RenderClear(renderer);
     SDL_RenderCopyEx(renderer, texture, NULL, &dest_rect, angle, &pivot, SDL_FLIP_NONE);
     SDL_RenderPresent(renderer);
 
-    // Main event loop
-    SDL_Event event;
-    int running = 1;
-    while (running)
-    {
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_QUIT)
-            {
-                running = 0;
-            }
-            else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
-            {
-                // Re-render image on resize
-                SDL_RenderClear(renderer);
-                SDL_RenderCopyEx(renderer, texture, NULL, &dest_rect, angle, &pivot, SDL_FLIP_NONE);
-                SDL_RenderPresent(renderer);
-            }
-        }
-    }
+    // Create output file path with "_turned" suffix
+    char output_path[256];
+    snprintf(output_path, sizeof(output_path), "%s_turned.png", strtok(argv[1], "."));
+
+    // Save the rotated surface as a PNG file
+    if (IMG_SavePNG(rotated_surface, output_path) != 0)
+        errx(EXIT_FAILURE, "Failed to save image: %s", IMG_GetError());
+
+    printf("Saved rotated image as %s\n", output_path);
 
     // Cleanup resources
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_FreeSurface(rotated_surface);
     IMG_Quit();
     SDL_Quit();
 
