@@ -38,7 +38,7 @@ void search(int col, int row,char grid[row][col], char* word)
 {
        // this fonction search on the grid thei position of word of find
  
-       int verif = 0; //check if the word was found
+       int check = 0; //check if the word was found
 
        to_uppercase(word);
        int len = my_strlen(word) -1; //length of the world to be search
@@ -62,7 +62,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		     if(word[w] == grid[r][j])
                      {
 			 printf("(%i,%i),(%i,%i)\n",j,i,j,i+len);
-			 verif = 1;
+			 check = 1;
 			 break;
 	             }
 	          }
@@ -81,7 +81,7 @@ void search(int col, int row,char grid[row][col], char* word)
                     if(word[w] == grid[i][c])
                     {
                        printf("(%i,%i),(%i,%i)\n",j,i,j+len,i);
-		       verif = 1;
+		       check = 1;
                        break;
                     }
 		}
@@ -101,7 +101,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		   if(word[w] == grid[r][j])
                    {
                       printf("(%i,%i),(%i,%i)\n",j,i,j,i-len);
-                      verif = 1;
+                      check = 1;
                       break;
                    }
                 }
@@ -120,7 +120,7 @@ void search(int col, int row,char grid[row][col], char* word)
                    if(word[w] == grid[i][c])
                    {
                       printf("(%i,%i),(%i,%i)\n",j,i,j-len,i);
-		      verif = 1;
+		      check = 1;
                       break;
                    }
                 }
@@ -143,7 +143,7 @@ void search(int col, int row,char grid[row][col], char* word)
                    if(word[w] == grid[r][c])
                    {
                       printf("(%i,%i),(%i,%i)\n",j,i,j+len,i+len);
-		      verif = 1;
+		      check = 1;
                       break;
                    }
                  }
@@ -165,7 +165,7 @@ void search(int col, int row,char grid[row][col], char* word)
                     if(word[w] == grid[r][c])
                     {
                        printf("(%i,%i),(%i,%i)\n",j,i,j-len,i+len);
-		       verif = 1;
+		       check = 1;
                        break;
                     }
                   }
@@ -187,7 +187,7 @@ void search(int col, int row,char grid[row][col], char* word)
                   if(word[w] == grid[r][c])
                   {
                      printf("(%i,%i),(%i,%i)\n",j,i,j-len,i-len);
-		     verif = 1;
+		     check = 1;
                      break;
                   }
                 }
@@ -209,7 +209,7 @@ void search(int col, int row,char grid[row][col], char* word)
                    if(word[w] == grid[r][c])
 		   {
                       printf("(%i,%i),(%i,%i)\n",j,i,j+len,i-len);
-		      verif = 1;
+		      check = 1;
                       break;
                    }
                 }
@@ -217,13 +217,13 @@ void search(int col, int row,char grid[row][col], char* word)
 	      }
 	  }
 
-          if(verif==1)
+          if(check==1)
           {
 	     break;
           }
        }
 
-       if(verif!=1)
+       if(check!=1)
        {
          printf("Not found\n");
        }
@@ -256,18 +256,18 @@ int main(int argc, char *argv[])
         
     int row = 0;
     int col = 0;
-    char charac;
+    char c;
 
-    while ((charac = fgetc(fp)) != EOF)
+    while ((c = fgetc(fp)) != EOF)
     {
         // this loop tranforms the file on a grid of char
 
-        if (charac == '\n')
+        if (c == '\n')
         {
                 row++;
         }
 
-        else if (charac >= 'A' && charac<='Z' && row==0)
+        else if (c >= 'A' && c <='Z' && row==0)
         {
                 col++;
         }
@@ -278,26 +278,26 @@ int main(int argc, char *argv[])
     char grid[row][col];
     int i = 0;
     int j = 0;
-    while ((charac = fgetc(fp)) != EOF)
+    while ((c = fgetc(fp)) != EOF)
     {
 	// this loop tranforms the file on a grid of char
 
-	if (charac == '\n')
+	if (c == '\n')
         {
                 j = 0;
                 i++;
         }
 
-	else if (charac >= 'A' && charac<='Z')
+	else if (c >= 'A' && c <='Z')
         {
-                grid[i][j] = charac;
+                grid[i][j] = c;
                 j++;
         }
     }
 
     fclose(fp);
 
-     search( col, row, grid, argv[2]); //search the word in the grid
+    search( col, row, grid, argv[2]); //search the word in the grid
 
-     return 0;
+    return 0;
 }
