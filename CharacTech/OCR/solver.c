@@ -67,7 +67,7 @@ void search(int col, int row,char grid[row][col], char* word)
 	             }
 	          }
 			
-		 else if(j+len <= row && word[len] == grid[i][j+len])
+		 if(j+len <= row && word[len] == grid[i][j+len])
 		 {
 		    //horizontal case
                     int c = j +1; 
@@ -87,7 +87,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		}
 
 
-		else if(i-len >= 0 && word[len] == grid[i-len][j])
+		if(i-len >= 0 && word[len] == grid[i-len][j])
                 {
                    //inverse vertical case
                    int r = i - 1;
@@ -106,7 +106,7 @@ void search(int col, int row,char grid[row][col], char* word)
                    }
                 }
 
-		else if(j-len >= 0 && word[len] == grid[i][j-len])
+		if(j-len >= 0 && word[len] == grid[i][j-len])
                 {
                    //inverse horizontal case
                    int c = j -1;
@@ -126,7 +126,7 @@ void search(int col, int row,char grid[row][col], char* word)
                 }
 
 
-		else if(i+len <= row && j+len <= col 
+		if(i+len <= row && j+len <= col 
 	        && word[len] == grid[i+len][j+len])
                 {
                    //diagonal case
@@ -148,7 +148,7 @@ void search(int col, int row,char grid[row][col], char* word)
                    }
                  }
 
-		 else if(i+len <= row && j-len <= col 
+		 if(i+len <= row && j-len <= col 
 	         && word[len] == grid[i+len][j-len])
                  {
                     //diagonale 2 case 
@@ -170,7 +170,7 @@ void search(int col, int row,char grid[row][col], char* word)
                     }
                   }
 
-		else if(i-len <= row && j-len <= col 
+	        if(i-len <= row && j-len <= col 
 		&& word[len] == grid[i-len][j-len])
                 {
                   //inverse diagonal case
@@ -192,7 +192,7 @@ void search(int col, int row,char grid[row][col], char* word)
                   }
                 }
 
-		else if(i-len <= row && j+len <= col 
+		if(i-len <= row && j+len <= col 
 	        && word[len] == grid[i-len][j+len])
                 {
                    //inverse diagonal 2 case
