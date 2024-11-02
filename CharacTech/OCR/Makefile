@@ -1,9 +1,9 @@
 # Makefile
 
 CC = gcc
-CFLAGS = -Wall -Wextra
-LDFLAGS =
-LDLIBS =
+CFLAGS = -Wall -Wextra 
+LDFLAGS = 
+LDLIBS = -lm
 
 EXE = solver xor
 
