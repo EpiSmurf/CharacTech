@@ -3,155 +3,155 @@
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_image.h>
 #include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-// Adjusts the contrast of a pixel's RGB values based on minimum and maximum intensities
-void fix_contrast(Uint8 *r, Uint8 *g, Uint8 *b, int min_int, int max_int)
+// Fonction pour détecter automatiquement les positions des cellules dans la grille
+void detect_grid(SDL_Surface *surface, int *cell_width, int *cell_height, int *grid_start_x, int *grid_start_y, int *grid_cols, int *grid_rows)
 {
-    int temp = 0;
-    
-    // Adjust red channel
-    temp = ((*r - min_int) * (255 / (max_int - min_int)));
-    if (temp > 255) temp = 255;
-    if (temp < 0) temp = 0;
-    *r = temp;
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    SDL_PixelFormat *format = surface->format;
+    int width = surface->w;
+    int height = surface->h;
 
-    // Adjust green channel
-    temp = ((*g - min_int) * (255 / (max_int - min_int)));
-    if (temp > 255) temp = 255;
-    if (temp < 0) temp = 0;
-    *g = temp;
+    int last_x = -1, last_y = -1;
+    *grid_start_x = width, *grid_start_y = height;
 
-    // Adjust blue channel
-    temp = ((*b - min_int) * (255 / (max_int - min_int)));
-    if (temp > 255) temp = 255;
-    if (temp < 0) temp = 0;
-    *b = temp;
+    // Détection des colonnes (limite en largeur pour éviter une colonne en trop)
+    for (int x = 1; x < width - 1; x++) {
+        for (int y = 0; y < height / 2; y++) {  // Limiter la recherche à la moitié supérieure
+            Uint8 r, g, b;
+            SDL_GetRGB(pixels[y * width + x], format, &r, &g, &b);
+            int intensity = (r + g + b) / 3;
+
+            if (intensity < 128) { // Si c'est sombre, détecter le bord
+                if (last_x == -1 || x - last_x > 1) {
+                    (*grid_cols)++;
+                    *cell_width = (last_x == -1) ? x : (x - *grid_start_x) / (*grid_cols - 1);
+                    if (x < *grid_start_x) *grid_start_x = x;
+                }
+                last_x = x;
+                break;
+            }
+        }
+    }
+    (*grid_cols)--; // Réduire d'une colonne pour corriger la détection trop large
+
+    // Détection des lignes, en continuant jusqu'à la fin
+    for (int y = 1; y < height; y++) {
+        int row_detected = 0;
+        for (int x = 0; x < width / 2; x++) { // Limiter la recherche à la moitié gauche de l'image
+            Uint8 r, g, b;
+            SDL_GetRGB(pixels[y * width + x], format, &r, &g, &b);
+            int intensity = (r + g + b) / 3;
+
+            if (intensity < 128) { // Si c'est sombre, détecter le bord
+                if (last_y == -1 || y - last_y > 1) {
+                    (*grid_rows)++;
+                    *cell_height = (last_y == -1) ? y : (y - *grid_start_y) / (*grid_rows - 1);
+                    if (y < *grid_start_y) *grid_start_y = y;
+                }
+                last_y = y;
+                row_detected = 1;
+                break;
+            }
+        }
+        
+        // Si aucune nouvelle ligne n'est détectée pendant un certain nombre de pixels, considérer que la grille est terminée
+        if (!row_detected && (*grid_rows > 0) && (y - last_y) > *cell_height) {
+            break;
+        }
+    }
 }
 
-// Converts an SDL surface to grayscale
+// Applique un filtre de gris sur une surface SDL
 void grayscale(SDL_Surface *surface)
 {
     Uint32 *pix = (Uint32 *)surface->pixels;
     SDL_LockSurface(surface);
     SDL_PixelFormat *format = surface->format;
 
-    int min_int = 255;
-    int max_int = 0;
-    int intensity = 0;
-    int gray = 0;
-
-    // Convert each pixel to grayscale and calculate intensity range
-    for (int i = 0; i < surface->w; i++)
-    {
-        for (int j = 0; j < surface->h; j++)
-        {
+    for (int i = 0; i < surface->w; i++) {
+        for (int j = 0; j < surface->h; j++) {
             Uint32 p = pix[i + (j * surface->w)];
             Uint8 r = 0, g = 0, b = 0;
 
             SDL_GetRGB(p, format, &r, &g, &b);
-            r = (r * 30) / 100;
-            g = (g * 59) / 100;
-            b = (b * 11) / 100;
-            gray = r + g + b;
-
-            intensity = (r + g + b) / 3;
-            if (intensity > max_int) max_int = intensity;
-            if (intensity < min_int) min_int = intensity;
+            Uint8 gray = (Uint8)((r * 30 + g * 59 + b * 11) / 100);
 
             p = SDL_MapRGB(format, gray, gray, gray);
             pix[i + (j * surface->w)] = p;
         }
     }
 
-    // Uncomment this section to adjust contrast after grayscale conversion
-    /*
-    for (int i = 0; i < surface->w; i++)
-    {
-        for (int j = 0; j < surface->h; j++)
-        {
-            Uint32 p = pix[i + (j * surface->w)];
-            Uint8 r = 0, g = 0, b = 0;
+    SDL_UnlockSurface(surface);
+}
 
-            SDL_GetRGB(p, format, &r, &g, &b);
-            fix_contrast(&r, &g, &b, min_int, max_int);
-            p = SDL_MapRGB(format, r, g, b);
-            pix[i + (j * surface->w)] = p;
+// Découpe l'image en lettres en utilisant les paramètres de la grille détectée
+void extract_letters(SDL_Surface *surface, int cell_width, int cell_height, int grid_start_x, int grid_start_y, int grid_cols, int grid_rows)
+{
+    for (int row = 0; row < grid_rows; row++) {
+        for (int col = 0; col < grid_cols; col++) {
+            SDL_Rect letter_rect = {
+                .x = grid_start_x + col * cell_width,
+                .y = grid_start_y + row * cell_height,
+                .w = cell_width,
+                .h = cell_height
+            };
+
+            SDL_Surface *letter_surface = SDL_CreateRGBSurface(0, cell_width, cell_height, surface->format->BitsPerPixel,
+                                                               surface->format->Rmask, surface->format->Gmask,
+                                                               surface->format->Bmask, surface->format->Amask);
+            if (!letter_surface) {
+                errx(EXIT_FAILURE, "Erreur de création de surface pour lettre : %s", SDL_GetError());
+            }
+
+            SDL_BlitSurface(surface, &letter_rect, letter_surface, NULL);
+
+            char filename[64];
+            snprintf(filename, sizeof(filename), "letter_%d_%d.png", row, col);
+            if (IMG_SavePNG(letter_surface, filename) != 0) {
+                errx(EXIT_FAILURE, "Erreur de sauvegarde de l'image %s : %s", filename, SDL_GetError());
+            }
+
+            SDL_FreeSurface(letter_surface);
         }
     }
-    */
-
-    SDL_UnlockSurface(surface);
 }
 
 int main(int argc, char** argv)
 {
-    printf("Image to load: '%s'\n", argv[1]);
+    printf("Image à charger : '%s'\n", argv[1]);
 
-    // Initialize SDL and SDL_image
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
-        errx(EXIT_FAILURE, "SDL initialization error: %s", SDL_GetError());
-    if (!(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG))
-        errx(EXIT_FAILURE, "Failed to initialize SDL_image: %s", SDL_GetError());
+        errx(EXIT_FAILURE, "Erreur d'initialisation de SDL: %s", SDL_GetError());
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
+        errx(EXIT_FAILURE, "Erreur d'initialisation de SDL_image: %s", SDL_GetError());
 
-    // Check for correct argument count
     if (argc != 2)
-        errx(EXIT_FAILURE, "Usage: %s <image-file>", argv[0]);
+        errx(EXIT_FAILURE, "Utilisation : %s <fichier-image>", argv[0]);
 
-    // Create SDL window
-    SDL_Window* window = SDL_CreateWindow("SDL Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    if (!window)
-        errx(EXIT_FAILURE, "Window creation error: %s", SDL_GetError());
-
-    // Create SDL renderer
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer)
-        errx(EXIT_FAILURE, "Renderer creation error: %s", SDL_GetError());
-
-    // Load image file into a surface
     SDL_Surface* t = IMG_Load(argv[1]);
     if (!t)
-        errx(EXIT_FAILURE, "Image load error: %s", SDL_GetError());
+        errx(EXIT_FAILURE, "Erreur de chargement de l'image: %s", SDL_GetError());
 
-    // Convert surface to required format
     SDL_Surface *surface = SDL_ConvertSurfaceFormat(t, SDL_PIXELFORMAT_RGB888, 0);
     SDL_FreeSurface(t);
     if (!surface)
-        errx(EXIT_FAILURE, "Surface conversion error: %s", SDL_GetError());
+        errx(EXIT_FAILURE, "Erreur de conversion de surface: %s", SDL_GetError());
 
-    SDL_SetWindowSize(window, surface->w, surface->h);
-
-    // Apply grayscale filter to the surface
     grayscale(surface);
 
-    // Create texture from the modified surface
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    int cell_width = 0, cell_height = 0;
+    int grid_start_x = 0, grid_start_y = 0;
+    int grid_cols = 0, grid_rows = 0;
+    
+    detect_grid(surface, &cell_width, &cell_height, &grid_start_x, &grid_start_y, &grid_cols, &grid_rows);
 
-    // Render texture to window
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer);
+    extract_letters(surface, cell_width, cell_height, grid_start_x, grid_start_y, grid_cols, grid_rows);
 
-    SDL_Event event;
-    while (1)
-    {
-        SDL_WaitEvent(&event);
-        if (event.type == SDL_QUIT)
-        {
-            // Cleanup and exit on quit event
-            SDL_FreeSurface(surface);
-            SDL_DestroyTexture(texture);
-            SDL_DestroyRenderer(renderer);
-            SDL_DestroyWindow(window);
-            IMG_Quit();
-            SDL_Quit();
-            return EXIT_SUCCESS;
-        }
-        else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
-        {
-            // Re-render on window resize
-            SDL_RenderCopy(renderer, texture, NULL, NULL);
-            SDL_RenderPresent(renderer);
-        }
-    }
-
+    SDL_FreeSurface(surface);
+    IMG_Quit();
+    SDL_Quit();
     return EXIT_SUCCESS;
 }
