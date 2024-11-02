@@ -1,1 +1,3 @@
-Template
+L'image fournie est déposée dans "\CharacTech\CharacTech\Formatage". Après avoir compilé avec make, si la grille n'est pas "droite", l'utilisateur peut la redresser en utilisant la commande "./turn grid.png [valeur entre -180 et 180]. Ensuite, en exécutant ./grid grid.png, le programme découpe la grille en une multitude d'images, que le réseau de neurones va retransformer en caractères.
+
+Pour executer le Solver et le réseau neuronal, il faut se rendre dans "\CharacTech\CharacTech\OCR". Après avoir compilé avec la commande "make", il sufit d'écrire la commande ".\solver [nom du fichier qui contient la grille du jeu] [mots à chercher]". Ensuite, pour le réseau de neuronnes, il suffit d'appeler la commande ".\xor".
