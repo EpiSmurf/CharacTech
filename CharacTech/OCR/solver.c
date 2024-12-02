@@ -1,6 +1,60 @@
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
+
+int is_white(Uint32 pixel_color, SDL_PixelFormat *format)
+{
+    Uint8 r,g,b;
+    SDL_GetRGB(pixel_color, format,&r, &g , &b);
+
+    if(r==255 && g==255 && b==255)
+    {
+       return 1;
+    }
+
+    return 0;
+
+
+}
+
+Uint32 pixel_to_color(Uint32 pixel_color, SDL_PixelFormat *format)
+{
+    Uint8 r,g,b;
+    SDL_GetRGB(pixel_color, format,&r, &g , &b);
+
+    return  SDL_MapRGB(format, 255, 182, 193);
+}
+
+void surface_to_color(SDL_Surface *surface)
+{
+    if (SDL_LockSurface(surface) != 0) 
+    {
+        fprintf(stderr, "Unable to lock surface: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_PixelFormat *format = surface->format;
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    int width = surface->w;
+    int height = surface->h;
+
+    for (int y = 5; y < height - 5; ++y)
+    {
+        for (int x = 5; x < width - 5; ++x) 
+        {
+            Uint32 *pixel = &pixels[y * width + x];
+            if (is_white(*pixel, format))
+            {
+                *pixel = pixel_to_color(*pixel, format);
+            }
+        }
+    }
+
+    SDL_UnlockSurface(surface);
+}
 
 void to_uppercase(char *str)
 {
@@ -238,7 +292,7 @@ int main(int argc, char *argv[])
      and returns the position of the word in the grid we created*/
      
 
-     if(argc != 3)
+     if(argc != 4)
      {
 	     err(EXIT_FAILURE,"you don't take two argument");
      }
@@ -298,6 +352,62 @@ int main(int argc, char *argv[])
     fclose(fp);
 
     search( col, row, grid, argv[2]); //search the word in the grid
+
+// SDL_TEST
+
+    if(SDL_Init(SDL_INIT_VIDEO)!=0)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+
+    SDL_Window* window = SDL_CreateWindow("Surface_to_no_green", 0, 0, 0, 0,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    if(window == NULL)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+
+    SDL_Surface* t = IMG_Load(argv[3]);
+    if (t == NULL)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+    SDL_Surface *surface = SDL_ConvertSurfaceFormat(t, SDL_PIXELFORMAT_RGB888, 0);
+    SDL_FreeSurface(t);
+    if (surface == NULL)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+
+    SDL_SetWindowSize(window,  surface->w, surface->h);
+
+    surface_to_color(surface);
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_RenderCopy(renderer,texture,NULL,NULL);
+    SDL_RenderPresent(renderer);
+
+    SDL_Event event;
+    while (1)
+    {
+        SDL_WaitEvent(&event);
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                SDL_FreeSurface(surface);
+                SDL_DestroyTexture(texture);
+                SDL_DestroyRenderer(renderer);
+                SDL_DestroyWindow(window);
+                SDL_Quit();
+                return EXIT_SUCCESS;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+                {
+                        SDL_RenderCopy(renderer,texture,NULL,NULL);
+                        SDL_RenderPresent(renderer);
+                }
+                break;
+        }
+    }
+
+      
 
     return 0;
 }

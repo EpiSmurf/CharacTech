@@ -3,7 +3,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra 
 LDFLAGS = 
-LDLIBS = -lm
+LDLIBS = -lm -lSDL2 -lSDL2_image
 
 EXE = solver xor
 
