@@ -10,7 +10,7 @@ int is_white(Uint32 pixel_color, SDL_PixelFormat *format)
     Uint8 r,g,b;
     SDL_GetRGB(pixel_color, format,&r, &g , &b);
 
-    if(r==255 && g==255 && b==255)
+    if(r >= 200 && g >= 200 && b >= 200)
     {
        return 1;
     }
@@ -41,9 +41,9 @@ void surface_to_color(SDL_Surface *surface)
     int width = surface->w;
     int height = surface->h;
 
-    for (int y = 5; y < height - 5; ++y)
+    for (int y = 1 ; y < height - 1; ++y)
     {
-        for (int x = 5; x < width - 5; ++x) 
+        for (int x = 1; x < width - 1; ++x) 
         {
             Uint32 *pixel = &pixels[y * width + x];
             if (is_white(*pixel, format))
@@ -54,6 +54,63 @@ void surface_to_color(SDL_Surface *surface)
     }
 
     SDL_UnlockSurface(surface);
+}
+
+Uint32 GetPixel(SDL_Surface *screen, int x, int y)
+{
+    return *(Uint32 *) ((Uint8 *)screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel);
+}
+
+void SetPixel(SDL_Surface *screen, int x, int y, Uint32 pixel)
+{
+    *(Uint32 *) ((Uint8 *)screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel) = pixel;
+}
+
+void mergeImagesh(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result) 
+{
+    SDL_Rect destRect = {0, 0, 0, 0};
+
+    // Copier la première image
+    SDL_BlitSurface(img1, NULL, result, &destRect);
+
+    // Copier la deuxième image à la droite de la première
+    destRect.x = img1->w;
+    SDL_BlitSurface(img2, NULL, result, &destRect);
+}
+
+void mergeImagesv(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result)
+{
+    SDL_Rect destRect = {0, 0, 0, 0};
+    SDL_BlitSurface(img1, NULL, result, &destRect);
+
+    // Copier la deuxième image en dessous de la première
+    destRect.y = img1->h; // Ajuster la position Y pour la seconde image
+    SDL_BlitSurface(img2, NULL, result, &destRect);
+}
+
+void mergeImageshv(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result)
+{
+	// Copier l'image de base dans la surface résultante
+    SDL_Rect destRect = {0, 0, 0, 0};
+    SDL_BlitSurface(img1, NULL, result, &destRect);
+
+    // Ajuster la position pour placer la nouvelle image en dessous et à droite
+    destRect.x = img1->w;               // Position X à droite de l'image de base
+    destRect.y = img1->h;               // Position Y juste en dessous de l'image de base
+    SDL_BlitSurface(img2, NULL, result, &destRect);
+}
+
+SDL_Surface* loadImage(int i, int j) 
+{
+    char filename[256];
+    snprintf(filename, sizeof(filename), "../Formatage/letter_%i_%i.png", i, j);
+
+    SDL_Surface* img = IMG_Load(filename);
+    if (!img) 
+    {
+        printf("Failed to load image: %s. SDL_image Error: %s\n", filename, IMG_GetError());
+    }
+    return img;
 }
 
 void to_uppercase(char *str)
@@ -292,7 +349,7 @@ int main(int argc, char *argv[])
      and returns the position of the word in the grid we created*/
      
 
-     if(argc != 4)
+     if(argc != 3)
      {
 	     err(EXIT_FAILURE,"you don't take two argument");
      }
@@ -353,61 +410,67 @@ int main(int argc, char *argv[])
 
     search( col, row, grid, argv[2]); //search the word in the grid
 
-// SDL_TEST
-
-    if(SDL_Init(SDL_INIT_VIDEO)!=0)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
-
-    SDL_Window* window = SDL_CreateWindow("Surface_to_no_green", 0, 0, 0, 0,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    if(window == NULL)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
-
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
-
-    SDL_Surface* t = IMG_Load(argv[3]);
-    if (t == NULL)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
-    SDL_Surface *surface = SDL_ConvertSurfaceFormat(t, SDL_PIXELFORMAT_RGB888, 0);
-    SDL_FreeSurface(t);
-    if (surface == NULL)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
-
-    SDL_SetWindowSize(window,  surface->w, surface->h);
-
-    surface_to_color(surface);
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    SDL_RenderCopy(renderer,texture,NULL,NULL);
-    SDL_RenderPresent(renderer);
-
-    SDL_Event event;
-    while (1)
+// SDL_PART: il reconstitue l'image avec la resolution des mot trouver
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
-        SDL_WaitEvent(&event);
-        switch (event.type)
-        {
-            case SDL_QUIT:
-                SDL_FreeSurface(surface);
-                SDL_DestroyTexture(texture);
-                SDL_DestroyRenderer(renderer);
-                SDL_DestroyWindow(window);
-                SDL_Quit();
-                return EXIT_SUCCESS;
-
-            case SDL_WINDOWEVENT:
-                if (event.window.event == SDL_WINDOWEVENT_RESIZED)
-                {
-                        SDL_RenderCopy(renderer,texture,NULL,NULL);
-                        SDL_RenderPresent(renderer);
-                }
-                break;
-        }
+        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
     }
 
-      
+    SDL_Window* window = SDL_CreateWindow("Fusion", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
+    if (!window) 
+    {
+        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
 
+    SDL_Surface* screenSurface = SDL_GetWindowSurface(window);
+
+    int co = 5; // Nombre de colonnes
+    int l = 5;  // Nombre de lignes
+    SDL_Surface* result = NULL;
+    for (int i = 0; i < l; i++) // Loop through rows
+    {
+ 	   for (int j = 0; j < co; j++) // Loop through columns
+    	   {
+        	SDL_Surface* img2 = loadImage(j, i); // Load image for each cell
+        	if (!img2) continue; // Skip if the image cannot be loaded
+
+        	if (result == NULL)
+        	{
+            		// Create result surface for the first image
+            		result = SDL_CreateRGBSurface(0, img2->w * co, img2->h * l, 32, 0, 0, 0, 0);
+        	}
+
+        	// Blit the image onto the correct spot in the grid
+        	SDL_Rect destRect;
+        	destRect.x = j * img2->w; // X position based on column
+        	destRect.y = i * img2->h; // Y position based on row
+
+        	// Copy the image onto the result surface
+        	SDL_BlitSurface(img2, NULL, result, &destRect);
+
+        	SDL_FreeSurface(img2); // Free img2 after use
+    	   }
+    }	    
+    if (result)
+    {
+        SDL_BlitSurface(result, NULL, screenSurface, NULL);
+        SDL_UpdateWindowSurface(window);
+
+        SDL_Event event;
+        while (1)
+        {
+            SDL_WaitEvent(&event);
+            if (event.type == SDL_QUIT)
+                break;
+        }
+
+        SDL_FreeSurface(result); // Libérer la surface résultante
+    }
+
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
