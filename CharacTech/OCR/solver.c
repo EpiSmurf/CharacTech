@@ -66,40 +66,6 @@ void SetPixel(SDL_Surface *screen, int x, int y, Uint32 pixel)
     *(Uint32 *) ((Uint8 *)screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel) = pixel;
 }
 
-void mergeImagesh(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result) 
-{
-    SDL_Rect destRect = {0, 0, 0, 0};
-
-    // Copier la première image
-    SDL_BlitSurface(img1, NULL, result, &destRect);
-
-    // Copier la deuxième image à la droite de la première
-    destRect.x = img1->w;
-    SDL_BlitSurface(img2, NULL, result, &destRect);
-}
-
-void mergeImagesv(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result)
-{
-    SDL_Rect destRect = {0, 0, 0, 0};
-    SDL_BlitSurface(img1, NULL, result, &destRect);
-
-    // Copier la deuxième image en dessous de la première
-    destRect.y = img1->h; // Ajuster la position Y pour la seconde image
-    SDL_BlitSurface(img2, NULL, result, &destRect);
-}
-
-void mergeImageshv(SDL_Surface* img1, SDL_Surface* img2, SDL_Surface* result)
-{
-	// Copier l'image de base dans la surface résultante
-    SDL_Rect destRect = {0, 0, 0, 0};
-    SDL_BlitSurface(img1, NULL, result, &destRect);
-
-    // Ajuster la position pour placer la nouvelle image en dessous et à droite
-    destRect.x = img1->w;               // Position X à droite de l'image de base
-    destRect.y = img1->h;               // Position Y juste en dessous de l'image de base
-    SDL_BlitSurface(img2, NULL, result, &destRect);
-}
-
 SDL_Surface* loadImage(int i, int j) 
 {
     char filename[256];
@@ -341,7 +307,8 @@ void search(int col, int row,char grid[row][col], char* word)
 }
 
 
-int main(int argc, char *argv[])
+
+int main()
 {
     /*This is solver function:
      *argv[1] takes the file that contains the word grid
@@ -349,15 +316,11 @@ int main(int argc, char *argv[])
      and returns the position of the word in the grid we created*/
      
 
-     if(argc != 3)
-     {
-	     err(EXIT_FAILURE,"you don't take two argument");
-     }
-
-     
+//.......... part of read the grid file........//
+   
      FILE *fp;
 
-     fp = fopen(argv[1], "r");
+     fp = fopen("grid", "r");
 
      if(fp == NULL)
      {
@@ -407,9 +370,47 @@ int main(int argc, char *argv[])
     }
 
     fclose(fp);
+//.......... part of read the grid file........//
+     FILE *fp2;
 
-    search( col, row, grid, argv[2]); //search the word in the grid
+     fp2 = fopen("word", "r");
 
+     if(fp2 == NULL)
+     {
+             printf("Error: not such file");
+             return 1;
+     }
+
+    int line = 0;
+    while ((c = fgetc(fp2)) != EOF)
+    {
+        // this loop count the nomber of word to be search
+
+        if (c == '\n')
+	{
+                line++;
+        }
+    }
+    
+    rewind(fp2);  // Move the cursor back to the beginning of the file 
+    
+    char* word[line];
+    char buffer[50];
+    i = 0;
+    while (fscanf(fp2, "%49s", buffer) != EOF)
+    {
+        // this loop tranforms the file on a grid of char
+        word[i] = malloc(strlen(buffer) );
+	strcpy(word[i], buffer);
+	i++;
+    }
+    fclose(fp);
+//.......... end of read both file ...........//
+ for(int k=0; k<line; k++)
+ {
+    search( col, row, grid, word[k]); //search the word in the grid
+					 //
+ }
 // SDL_PART: il reconstitue l'image avec la resolution des mot trouver
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
@@ -427,20 +428,18 @@ int main(int argc, char *argv[])
 
     SDL_Surface* screenSurface = SDL_GetWindowSurface(window);
 
-    int co = 5; // Nombre de colonnes
-    int l = 5;  // Nombre de lignes
     SDL_Surface* result = NULL;
-    for (int i = 0; i < l; i++) // Loop through rows
+    for (int i = 0; i < row; i++) // Loop through rows
     {
- 	   for (int j = 0; j < co; j++) // Loop through columns
+ 	   for (int j = 0; j < col; j++) // Loop through columns
     	   {
-        	SDL_Surface* img2 = loadImage(j, i); // Load image for each cell
+        	SDL_Surface* img2 = loadImage(i, j); // Load image for each cell
         	if (!img2) continue; // Skip if the image cannot be loaded
 
         	if (result == NULL)
         	{
             		// Create result surface for the first image
-            		result = SDL_CreateRGBSurface(0, img2->w * co, img2->h * l, 32, 0, 0, 0, 0);
+            		result = SDL_CreateRGBSurface(0, img2->w * col, img2->h * row, 32, 0, 0, 0, 0);
         	}
 
         	// Blit the image onto the correct spot in the grid
