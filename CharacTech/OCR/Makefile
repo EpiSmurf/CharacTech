@@ -1,7 +1,7 @@
 # Makefile
 
 CC = gcc
-CFLAGS = -Wall -Wextra 
+CFLAGS = -Wall -Wextra -g 
 LDFLAGS = 
 LDLIBS = -lm -lSDL2 -lSDL2_image
 
