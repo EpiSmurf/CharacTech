@@ -37,23 +37,24 @@ void filter_isolated_pixels(SDL_Surface *surface) {
         for (int x = 1; x < width - 1; x++) {
             int index = y * width + x;
             Uint32 current = temp_pixels[index];
-            int similar_count = 0;
+            //int similar_count = 0;
 
             // Vérifier les 8 voisins
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dx = -1; dx <= 1; dx++) {
-                    if (dx == 0 && dy == 0) continue;
-                    int neighbor_index = (y + dy) * width + (x + dx);
-                    if (temp_pixels[neighbor_index] == current) {
-                        similar_count++;
+                    if (dx != 0 && dy != 0){
+                        int neighbor_index = (y + dy) * width + (x + dx);
+                        if (temp_pixels[neighbor_index] == current) {
+                            //similar_count++;
+                        }
                     }
                 }
             }
 
             // Si moins de 2 voisins similaires, rendre le pixel noir
-            if (similar_count < 2) {
-                pixels[index] = SDL_MapRGB(format, 0, 0, 0);
-            }
+           // if (similar_count < 2) {
+           //     pixels[index] = SDL_MapRGB(format, 0, 0, 0);
+           // }
         }
     }
 
@@ -89,7 +90,7 @@ int main(int argc, char *argv[]) {
     filter_isolated_pixels(image);
 
     // Ajuster le contraste
-    float contrast = 100.0f; // Ajuster cette valeur pour plus ou moins de contraste
+    float contrast = 100.0f; // Valeure a ajuster pour changer le contraste
     for (int y = 0; y < image->h; y++) {
         for (int x = 0; x < image->w; x++) {
             int index = y * image->w + x;
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     // Générer le nom du fichier de sortie
     char output_filename[256];
-    snprintf(output_filename, sizeof(output_filename), "%s_filtered.png", argv[1]);
+    snprintf(output_filename, sizeof(output_filename), "%s", argv[1]);
     char *dot = strrchr(output_filename, '.');
     if (dot) {
         strcpy(dot, "_filtered.png");

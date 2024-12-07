@@ -331,7 +331,11 @@ int main(int argc, char** argv) {
 
     // Create output file path with "_turned" suffix
     char output_path[256];
-    snprintf(output_path, sizeof(output_path), "%s_turned.png", argv[1]);
+    snprintf(output_path, sizeof(output_path), "%s", argv[1]);
+    char *dot = strrchr(output_path, '.');
+    if (dot) {
+        strcpy(dot, "_turned.png");
+    }
 
     // Save the rotated surface as a PNG file
     if (IMG_SavePNG(rotated_surface, output_path) != 0)
