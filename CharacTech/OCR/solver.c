@@ -25,7 +25,7 @@ Uint32 pixel_to_color(Uint32 pixel_color, SDL_PixelFormat *format)
     Uint8 r,g,b;
     SDL_GetRGB(pixel_color, format,&r, &g , &b);
 
-    return  SDL_MapRGB(format, 255, 182, 193);
+    return  SDL_MapRGB(format, 215, 160, 150);
 }
 
 void surface_to_color(SDL_Surface *surface)
