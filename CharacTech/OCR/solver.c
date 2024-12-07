@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_image.h>
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
 
-<<<<<<< HEAD
 int is_white(Uint32 pixel_color, SDL_PixelFormat *format)
 {
     Uint8 r,g,b;
@@ -60,33 +56,6 @@ void surface_to_color(SDL_Surface *surface)
     SDL_UnlockSurface(surface);
 }
 
-void surface_to_colord(SDL_Surface *surface)
-{
-    if (SDL_LockSurface(surface) != 0) {
-        fprintf(stderr, "Unable to lock surface: %s\n", SDL_GetError());
-        return;
-    }
-
-    SDL_PixelFormat *format = surface->format;
-    Uint32 *pixels = (Uint32 *)surface->pixels;
-    int width = surface->w;
-    int height = surface->h;
-    int mid_x = width / 2; // Milieu de l'image en largeur
-    int mid_y = height / 2; // Milieu de l'image en hauteur
-
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            // Vérifie si le pixel est dans le motif en losange
-            if (is_white(pixels[y * width + x], format)) {
-                if (abs(mid_x - x) + abs(mid_y - y) < mid_x) {
-                    pixels[y * width + x] =  pixel_to_color(*pixels, format); // Remplace par la couleur spécifiée
-                }
-            }
-        }
-    }
-
-    SDL_UnlockSurface(surface);
-}
 
 Uint32 GetPixel(SDL_Surface *screen, int x, int y)
 {
@@ -101,7 +70,7 @@ void SetPixel(SDL_Surface *screen, int x, int y, Uint32 pixel)
 SDL_Surface* loadImage(int i, int j) 
 {
     char filename[256];
-    snprintf(filename, sizeof(filename), "../Formatage/letter_%i_%i.png", i, j);
+    snprintf(filename, sizeof(filename), "../Formatage/grid_char_%i_%i.png", i, j);
 
     SDL_Surface* img = IMG_Load(filename);
     if (!img) 
@@ -114,7 +83,7 @@ SDL_Surface* loadImage(int i, int j)
 void saveImage(SDL_Surface* img, int i, int j) 
 {
     char filename[256];
-    snprintf(filename, sizeof(filename), "../Formatage/letter_%i_%i.png", i, j);
+    snprintf(filename, sizeof(filename), "../Formatage/grid_char_%i_%i.png", i, j);
 
     if (IMG_SavePNG(img, filename) != 0) 
     {
@@ -126,8 +95,6 @@ void saveImage(SDL_Surface* img, int i, int j)
     }
 }
 
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
 void to_uppercase(char *str)
 {
 	// this function takes a world change it to a capital letter
@@ -164,7 +131,6 @@ void search(int col, int row,char grid[row][col], char* word)
 {
        // this fonction search on the grid thei position of word of find
  
-<<<<<<< HEAD
        if(SDL_Init(SDL_INIT_VIDEO)!=0)
        {
        		errx(EXIT_FAILURE, "%s", SDL_GetError());
@@ -182,8 +148,6 @@ void search(int col, int row,char grid[row][col], char* word)
        {
         	errx(EXIT_FAILURE, "%s", SDL_GetError());
        }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
        int check = 0; //check if the word was found
 
        to_uppercase(word);
@@ -207,7 +171,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
 		     if(word[w] == grid[r][j])
                      {
-<<<<<<< HEAD
 			 for(int l = i; l<=i+len; l++)
 			 {
 			      SDL_Surface* t =  loadImage(l,j);
@@ -215,8 +178,6 @@ void search(int col, int row,char grid[row][col], char* word)
 			      saveImage(t, l,j);
 			      SDL_FreeSurface(t);
 			 }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
 			 printf("(%i,%i),(%i,%i)\n",j,i,j,i+len);
 			 check = 1;
 			 break;
@@ -236,7 +197,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                     if(word[w] == grid[i][c])
                     {
-<<<<<<< HEAD
 		       for(int l = j; l<=j+len; l++)
                        {
                               SDL_Surface* t =  loadImage(i,l);
@@ -244,8 +204,6 @@ void search(int col, int row,char grid[row][col], char* word)
                               saveImage(t, i,l);
                               SDL_FreeSurface(t);
                        }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                        printf("(%i,%i),(%i,%i)\n",j,i,j+len,i);
 		       check = 1;
                        break;
@@ -266,7 +224,6 @@ void search(int col, int row,char grid[row][col], char* word)
        
 		   if(word[w] == grid[r][j])
                    {
-<<<<<<< HEAD
 		      for(int l = i; l>=i-len; l--)
                       {
                               SDL_Surface* t =  loadImage(l,j);
@@ -274,8 +231,6 @@ void search(int col, int row,char grid[row][col], char* word)
                               saveImage(t, l,j);
                               SDL_FreeSurface(t);
                       }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                       printf("(%i,%i),(%i,%i)\n",j,i,j,i-len);
                       check = 1;
                       break;
@@ -295,7 +250,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                    if(word[w] == grid[i][c])
                    {
-<<<<<<< HEAD
 		      for(int l = j; l>=j-len; l--)
                       {
                               SDL_Surface* t =  loadImage(i,l);
@@ -303,8 +257,6 @@ void search(int col, int row,char grid[row][col], char* word)
                               saveImage(t, i,l);
                               SDL_FreeSurface(t);
                       }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                       printf("(%i,%i),(%i,%i)\n",j,i,j-len,i);
 		      check = 1;
                       break;
@@ -328,7 +280,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                    if(word[w] == grid[r][c])
                    {
-<<<<<<< HEAD
 		      for (int d = 0; d <= len; d++) // d représente le déplacement le long de la diagonale
 		      {
     			   int c = i + d; // Coordonnée verticale
@@ -338,8 +289,6 @@ void search(int col, int row,char grid[row][col], char* word)
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
 		      }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                       printf("(%i,%i),(%i,%i)\n",j,i,j+len,i+len);
 		      check = 1;
                       break;
@@ -362,7 +311,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                     if(word[w] == grid[r][c])
                     {
-<<<<<<< HEAD
 		       for (int d = 0; d <= len; d++) // d représente le déplacement le long de la diagonale
                        {
                            int c = i + d; // Coordonnée verticale
@@ -372,8 +320,6 @@ void search(int col, int row,char grid[row][col], char* word)
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                        } 
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                        printf("(%i,%i),(%i,%i)\n",j,i,j-len,i+len);
 		       check = 1;
                        break;
@@ -396,7 +342,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                   if(word[w] == grid[r][c])
                   {
-<<<<<<< HEAD
 		     for (int d = 0; d <= len; d++) // d représente le déplacement le long de la diagonale
                      {
                            int c = i - d; // Coordonnée verticale
@@ -406,8 +351,6 @@ void search(int col, int row,char grid[row][col], char* word)
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                      }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                      printf("(%i,%i),(%i,%i)\n",j,i,j-len,i-len);
 		     check = 1;
                      break;
@@ -430,7 +373,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
                    if(word[w] == grid[r][c])
 		   {
-<<<<<<< HEAD
 		      for (int d = 0; d <= len; d++) // d représente le déplacement le long de la diagonale
                       {
                            int c = i + d; // Coordonnée verticale
@@ -440,8 +382,6 @@ void search(int col, int row,char grid[row][col], char* word)
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                       }
-=======
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
                       printf("(%i,%i),(%i,%i)\n",j,i,j+len,i-len);
 		      check = 1;
                       break;
@@ -461,7 +401,6 @@ void search(int col, int row,char grid[row][col], char* word)
        {
          printf("Not found\n");
        }
-<<<<<<< HEAD
 
        SDL_DestroyWindow(window);
        SDL_Quit();
@@ -470,12 +409,6 @@ void search(int col, int row,char grid[row][col], char* word)
 
 
 int main()
-=======
-}
-
-
-int main(int argc, char *argv[])
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
 {
     /*This is solver function:
      *argv[1] takes the file that contains the word grid
@@ -483,23 +416,11 @@ int main(int argc, char *argv[])
      and returns the position of the word in the grid we created*/
      
 
-<<<<<<< HEAD
 //.......... part of read the grid file........//
    
      FILE *fp;
 
      fp = fopen("grid", "r");
-=======
-     if(argc != 3)
-     {
-	     err(EXIT_FAILURE,"you don't take two argument");
-     }
-
-     
-     FILE *fp;
-
-     fp = fopen(argv[1], "r");
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
 
      if(fp == NULL)
      {
@@ -549,7 +470,6 @@ int main(int argc, char *argv[])
     }
 
     fclose(fp);
-<<<<<<< HEAD
 //.......... part of read the grid file........//
      FILE *fp2;
 
@@ -653,10 +573,5 @@ int main(int argc, char *argv[])
 
     SDL_DestroyWindow(window);
     SDL_Quit();
-=======
-
-    search( col, row, grid, argv[2]); //search the word in the grid
-
->>>>>>> b0a8fc2e8cace7371abc55b3c39fbb9682d63c88
     return 0;
 }
