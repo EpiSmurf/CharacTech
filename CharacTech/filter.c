@@ -21,7 +21,6 @@ Uint32 adjust_contrast(Uint32 pixel, float contrast, SDL_PixelFormat *format) {
 void filter_isolated_pixels(SDL_Surface *surface) {
     int width = surface->w;
     int height = surface->h;
-    SDL_PixelFormat *format = surface->format;
     Uint32 *pixels = (Uint32 *)surface->pixels;
 
     // Créer une copie des pixels pour le traitement
