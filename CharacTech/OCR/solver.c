@@ -20,15 +20,15 @@ int is_white(Uint32 pixel_color, SDL_PixelFormat *format)
 
 }
 
-Uint32 pixel_to_color(Uint32 pixel_color, SDL_PixelFormat *format)
+Uint32 pixel_to_color(Uint32 pixel_color, SDL_PixelFormat *format,int color[])
 {
     Uint8 r,g,b;
     SDL_GetRGB(pixel_color, format,&r, &g , &b);
 
-    return  SDL_MapRGB(format, 215, 160, 150);
+    return  SDL_MapRGB(format, color[0], color[1], color[2]);
 }
 
-void surface_to_color(SDL_Surface *surface,int dec[])
+void surface_to_color(SDL_Surface *surface,int dec[],int color[])
 {
     if (SDL_LockSurface(surface) != 0) 
     {
@@ -48,7 +48,7 @@ void surface_to_color(SDL_Surface *surface,int dec[])
             Uint32 *pixel = &pixels[y * width + x];
             if (is_white(*pixel, format))
             {
-                *pixel = pixel_to_color(*pixel, format);
+                *pixel = pixel_to_color(*pixel, format,color);
             }
         }
     }
@@ -57,15 +57,6 @@ void surface_to_color(SDL_Surface *surface,int dec[])
 }
 
 
-Uint32 GetPixel(SDL_Surface *screen, int x, int y)
-{
-    return *(Uint32 *) ((Uint8 *)screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel);
-}
-
-void SetPixel(SDL_Surface *screen, int x, int y, Uint32 pixel)
-{
-    *(Uint32 *) ((Uint8 *)screen->pixels + y * screen->pitch + x * screen->format->BytesPerPixel) = pixel;
-}
 
 SDL_Surface* loadImage(int i, int j) 
 {
@@ -79,11 +70,38 @@ SDL_Surface* loadImage(int i, int j)
     }
     return img;
 }
-
-void saveImage(SDL_Surface* img, int i, int j) 
+void saveImage(SDL_Surface* img, int i, int j)
 {
     char filename[256];
     snprintf(filename, sizeof(filename), "../Formatage/grid_char_%i_%i.png", i, j);
+
+    if (IMG_SavePNG(img, filename) != 0)
+    {
+        printf("Failed to save image: %s. SDL_image Error: %s\n", filename, IMG_GetError());
+    }
+    else
+    {
+        printf("Image saved successfully as: %s\n", filename);
+    }
+}
+
+SDL_Surface* loadImage2(int i, int j)
+{
+    char filename[256];
+    snprintf(filename, sizeof(filename), "../Formatage/word_%i_%i_%i.png", i, j);
+
+    SDL_Surface* img = IMG_Load(filename);
+    if (!img)
+    {
+        printf("Failed to load image: %s. SDL_image Error: %s\n", filename, IMG_GetError());
+    }
+    return img;
+}
+
+void saveImage2(SDL_Surface* img, int i, int j) 
+{
+    char filename[256];
+    snprintf(filename, sizeof(filename), "../Formatage/word_%i_%i_%i.png", i, j);
 
     if (IMG_SavePNG(img, filename) != 0) 
     {
@@ -127,7 +145,7 @@ int my_strlen(char str[])
 }
 
 
-void search(int col, int row,char grid[row][col], char* word)
+void search(int col, int row,char grid[row][col], char* word,int color[])
 {
        // this fonction search on the grid thei position of word of find
        int dec[4]; 
@@ -161,7 +179,7 @@ void search(int col, int row,char grid[row][col], char* word)
 			 for(int l = i; l<=i+len; l++)
 			 {
 			      SDL_Surface* t =  loadImage(l,j);
-			      surface_to_color(t,dec);
+			      surface_to_color(t,dec,color);
 			      saveImage(t, l,j);
 			      SDL_FreeSurface(t);
 			 }
@@ -191,7 +209,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		       for(int l = j; l<=j+len; l++)
                        {
                               SDL_Surface* t =  loadImage(i,l);
-                              surface_to_color(t, dec);
+                              surface_to_color(t, dec,color);
                               saveImage(t, i,l);
                               SDL_FreeSurface(t);
                        }
@@ -218,7 +236,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		      for(int l = i; l>=i-len; l--)
                       {
                               SDL_Surface* t =  loadImage(l,j);
-                              surface_to_color(t,dec);
+                              surface_to_color(t,dec, color);
                               saveImage(t, l,j);
                               SDL_FreeSurface(t);
                       }
@@ -248,7 +266,7 @@ void search(int col, int row,char grid[row][col], char* word)
 		      for(int l = j; l>=j-len; l--)
                       {
                               SDL_Surface* t =  loadImage(i,l);
-                              surface_to_color(t,dec);
+                              surface_to_color(t,dec, color);
                               saveImage(t, i,l);
                               SDL_FreeSurface(t);
                       }
@@ -284,7 +302,7 @@ void search(int col, int row,char grid[row][col], char* word)
     			   int c = i + d; // Coordonnée verticale
     			   int l = j + d;
 			   SDL_Surface* t =  loadImage(c,l);
-                           surface_to_color(t,dec);
+                           surface_to_color(t,dec, color);
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
 		      }
@@ -319,7 +337,7 @@ void search(int col, int row,char grid[row][col], char* word)
                            int c = i + d; // Coordonnée verticale
                            int l = j - d;
                            SDL_Surface* t =  loadImage(c,l);
-                           surface_to_color(t,dec);
+                           surface_to_color(t,dec, color);
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                        } 
@@ -354,7 +372,7 @@ void search(int col, int row,char grid[row][col], char* word)
                            int c = i - d; // Coordonnée verticale
                            int l = j - d;
                            SDL_Surface* t =  loadImage(c,l);
-                           surface_to_color(t,dec);
+                           surface_to_color(t,dec, color);
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                      }
@@ -380,16 +398,16 @@ void search(int col, int row,char grid[row][col], char* word)
 
                    if(word[w] == grid[r][c])
 		   {
-		       dec[0]=0;
+		         dec[0]=0;
                          dec[1]=0;
                          dec[2]=0;
                          dec[3]=0;
 		      for (int d = 0; d <= len; d++) // d représente le déplacement le long de la diagonale
                       {
-                           int c = i + d; // Coordonnée verticale
-                           int l = j - d;
+                           int c = i - d; // Coordonnée verticale
+                           int l = j + d;
                            SDL_Surface* t =  loadImage(c,l);
-                           surface_to_color(t,dec);
+                           surface_to_color(t,dec, color);
                            saveImage(t, c, l);
                            SDL_FreeSurface(t);
                       }
@@ -513,7 +531,7 @@ int main()
 	strcpy(word[i], buffer);
 	i++;
     }
-    fclose(fp);
+    fclose(fp2);
 //.......... end of read both file ...........//
  
 for(int i = 0; i< row; i++)
@@ -526,9 +544,22 @@ for(int i = 0; i< row; i++)
     }
 }
  // printf("row: %i,col: %i\n",row,col);
+ 
+int color[9][3]= {
+        	{254, 191, 210},
+        	{49, 140, 231},
+		{150, 131, 236},
+		{135, 233, 144},
+		{221, 152, 92},
+		{250, 234, 115},
+		{187, 210, 225},
+		{204, 255, 255},
+		{255, 99, 71},
+            };
+
  for(int k=0; k<line; k++)
  {
-    search( col, row, grid, word[k]); //search the word in the grid
+    search(col, row, grid, word[k],color[k%9]); //search the word in the grid
 					 //
  }
 // SDL_PART: il reconstitue l'image avec la resolution des mot trouver
@@ -573,6 +604,10 @@ for(int i = 0; i< row; i++)
         	SDL_FreeSurface(img2); // Free img2 after use
     	   }
     }	    
+    
+    
+
+
     if (result)
     {
         SDL_BlitSurface(result, NULL, screenSurface, NULL);
